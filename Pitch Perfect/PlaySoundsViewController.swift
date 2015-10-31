@@ -9,6 +9,7 @@
 import UIKit
 import AVFoundation
 
+@available(iOS 8.0, *)
 class PlaySoundsViewController: UIViewController {
     
     var audioPlayer:AVAudioPlayer!
@@ -21,11 +22,11 @@ class PlaySoundsViewController: UIViewController {
     {
         super.viewDidLoad()
 
-        audioPlayer = AVAudioPlayer(contentsOfURL: receivedAudio.filePathURL, error: nil)
+        audioPlayer = try? AVAudioPlayer(contentsOfURL: receivedAudio.filePathURL)
         audioPlayer.enableRate = true
         
         audioEngine = AVAudioEngine()
-        audioFile = AVAudioFile(forReading: receivedAudio.filePathURL, error: nil)
+        audioFile = try? AVAudioFile(forReading: receivedAudio.filePathURL)
     }
 
     func resetAllAudio()
@@ -68,10 +69,10 @@ class PlaySoundsViewController: UIViewController {
     {
         resetAllAudio()
         
-        var audioPlayerNode = AVAudioPlayerNode()
+        let audioPlayerNode = AVAudioPlayerNode()
         audioEngine.attachNode(audioPlayerNode)
         
-        var changePitchEffect = AVAudioUnitTimePitch()
+        let changePitchEffect = AVAudioUnitTimePitch()
         changePitchEffect.pitch = pitch
         audioEngine.attachNode(changePitchEffect)
         
@@ -79,7 +80,12 @@ class PlaySoundsViewController: UIViewController {
         audioEngine.connect(changePitchEffect, to: audioEngine.outputNode, format: nil)
         
         audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: nil)
-        audioEngine.startAndReturnError(nil)
+        do
+        {
+            try audioEngine.start()
+        }
+        catch _ {
+        }
         audioPlayerNode.play()
     }
 
